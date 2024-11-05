@@ -1,7 +1,7 @@
 
 
-from fancy_string import cstr
-from mutable_class import MutableClass
+from .fancy_string import cstr
+from .mutable_class import MutableClass
 from typing import Literal
 
 
