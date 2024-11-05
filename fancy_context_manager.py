@@ -1,6 +1,6 @@
 
 import traceback as tb
-from fancy_string import cstr
+from .fancy_string import cstr
 
 
 
