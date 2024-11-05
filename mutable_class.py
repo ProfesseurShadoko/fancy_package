@@ -1,8 +1,8 @@
 
 
 
-from fancy_string import cstr
-from fancy_context_manager import FancyCM
+from .fancy_string import cstr
+from .fancy_context_manager import FancyCM
 
 
 
