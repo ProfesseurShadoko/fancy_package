@@ -1,9 +1,9 @@
 
-from fancy_string import cstr
-from mutable_class import MutableClass
+from .fancy_string import cstr
+from .mutable_class import MutableClass
 import time
-from task import Task
-from message import Message
+from .task import Task
+from .message import Message
 
 
 class ProgressBar(MutableClass):
