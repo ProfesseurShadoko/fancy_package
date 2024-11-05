@@ -1,7 +1,7 @@
 
-from mutable_class import MutableClass
-from fancy_string import cstr
-from fancy_context_manager import FancyCM   
+from .mutable_class import MutableClass
+from .fancy_string import cstr
+from .fancy_context_manager import FancyCM   
 from typing import Literal
 import time
 
