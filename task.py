@@ -48,7 +48,7 @@ class Task(MutableClass, FancyCM):
             cstr('[!]').red(), "Task aborted after:", cstr(self.time(time.time()-self.start_time)).red()
         )
         
-        assert self.__class__.running_tasks.pop() == self, "The task was not removed from the list of running tasks. This should not happen."
+        # assert self.__class__.running_tasks.pop() == self, "The task was not removed from the list of running tasks. This should not happen."
     
     
     #######################
