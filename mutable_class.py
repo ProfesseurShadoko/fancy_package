@@ -126,6 +126,9 @@ class MutableClass:
         Prints an empty line, if and only if the class is not muted.
         """
         cls.print()
+    
+    def __repr__(self) -> str:
+        return "" # avoid displaying in Notebooks
         
     
     
