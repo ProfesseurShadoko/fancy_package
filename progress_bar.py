@@ -8,6 +8,8 @@ from .message import Message
 
 class ProgressBar(MutableClass):
     
+    current_instance = None
+    
     def __init__(self, lst, size:int=None, new_line:bool = False):
         """
     Parameters
@@ -40,6 +42,7 @@ class ProgressBar(MutableClass):
             iterator
         """
         super().__init__()
+        ProgressBar.current_instance = self
         
         if size is None:
             if not hasattr(lst,'__len__'):
@@ -108,12 +111,28 @@ class ProgressBar(MutableClass):
                 next_print + " "*10,
                 end=("\r" if not self.new_line else "\n")
             )
-            
+        
+    @staticmethod
+    def whisper(msg:str):
+        """
+        Print a message without affecting the progress bar. Progress bar will be reprinted after the message.
+        """
+        if ProgressBar.current_instance is None:
+            ProgressBar.print(cstr("[%]").magenta(), msg)
+            return
+        
+        # 1. Erase the current progress bar
+        ProgressBar.current_instance.print("\r" + " "*len(ProgressBar.current_instance.previous_print), end="\r")
+        ProgressBar.current_instance.print(cstr("[%]").magenta(), msg)
+        ProgressBar.current_instance.show()
+
 
 if __name__ == '__main__':
     
     with Task("Computing something heavy", new_line=True):
         for i in ProgressBar(range(100), size=100):
             time.sleep(0.05)
+            if i==50:
+                ProgressBar.whisper("Halfway there!")
     
     Message("Success!", "#")
