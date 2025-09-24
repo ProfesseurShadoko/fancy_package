@@ -39,3 +39,13 @@ class MemoryView(MutableClass):
         """
         memory = psutil.virtual_memory().available / (1024 ** 3)  # in GB
         return memory
+    
+    
+class TODO(MutableClass):
+    def __init__(self, message: str, complete:bool = False):
+        prefix = '[x]' if complete else '[ ]'
+        color = 'g' if complete else 'y'
+        
+        self.print(
+            f"{cstr(prefix):{color}} {message}"
+        )
