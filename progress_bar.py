@@ -4,6 +4,7 @@ from .mutable_class import MutableClass
 import time
 from .task import Task
 from .message import Message
+from .status import MemoryView, TODO # TODO: create an function 'mute_all' to mute all children of MutableClass
 
 
 class ProgressBar(MutableClass):
@@ -68,6 +69,8 @@ class ProgressBar(MutableClass):
         if not self.new_line:
             Message.mute()
             Task.mute()
+            TODO.mute()
+            MemoryView.mute()
         
     
     def __iter__(self) -> 'ProgressBar':
@@ -86,6 +89,8 @@ class ProgressBar(MutableClass):
             if not self.new_line:
                 Message.unmute() # unmute the classes that were muted for the execution
                 Task.unmute()
+                TODO.unmute()
+                MemoryView.unmute()
             self.print(
                 cstr("[%]").magenta(),
                 " Done!" + " "*50

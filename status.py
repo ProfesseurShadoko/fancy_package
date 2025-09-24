@@ -47,5 +47,5 @@ class TODO(MutableClass):
         color = 'g' if complete else 'y'
         
         self.print(
-            f"{cstr(prefix):{color}} {message}"
+            f"{cstr(prefix):{color}} TODO: {message}"
         )
