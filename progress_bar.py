@@ -10,25 +10,7 @@ from .status import MemoryView, TODO # TODO: create an function 'mute_all' to mu
 class ProgressBar(MutableClass):
     
     current_instance = None
-    
-    def __init__(self, lst, size:int=None, new_line:bool = False):
-        """
-    Parameters
-    ----------
-    lst: iterable or iterator object (list, range, enumerate, zip, np.array, etc.)
-    size: The size of the list. If the object is an iterator, it may not have a __len__ magic method. In this case, provide the size of the iterator.
-    
-    Returns
-    -------
-        iterator object that prints the progress of the iteration (and the remaining time).
-        
-    Example
-    -------
-    >>> for i in ProgressBar(range(100), size=100):
-    >>>    Task("Processing item",i) # this is muted during the iteration
-    >>>    time.sleep(0.1)
-    >>>    Task("Item",i,"processed!") # this is muted during the iteration
-    """
+
     
     def __init__(self, lst, size:int=None, new_line:bool = False) -> None:
         """
@@ -67,10 +49,7 @@ class ProgressBar(MutableClass):
         self.new_line = new_line
         
         if not self.new_line:
-            Message.mute()
-            Task.mute()
-            TODO.mute()
-            MemoryView.mute()
+            MutableClass.mute()
         
     
     def __iter__(self) -> 'ProgressBar':
@@ -87,13 +66,10 @@ class ProgressBar(MutableClass):
             return next(self.list)
         except StopIteration:
             if not self.new_line:
-                Message.unmute() # unmute the classes that were muted for the execution
-                Task.unmute()
-                TODO.unmute()
-                MemoryView.unmute()
+                MutableClass.unmute()
             self.print(
                 cstr("[%]").magenta(),
-                " Done!" + " "*50
+                " Done!" + " "*50,
             )
             raise(StopIteration())
     
@@ -112,10 +88,13 @@ class ProgressBar(MutableClass):
         if next_print != self.previous_print:
             self.previous_print = next_print
             
+            MutableClass.unmute()
             self.print(
                 next_print + " "*10,
                 end=("\r" if not self.new_line else "\n")
             )
+            MutableClass.mute()
+            
         
     @staticmethod
     def whisper(msg:str):
@@ -123,14 +102,18 @@ class ProgressBar(MutableClass):
         Print a message without affecting the progress bar. Progress bar will be reprinted after the message.
         """
         if ProgressBar.current_instance is None:
+            MutableClass.unmute()
             ProgressBar.print(cstr("[%]").magenta(), msg)
+            MutableClass.mute()
             return
         
         # 1. Erase the current progress bar
+        MutableClass.unmute()
         ProgressBar.current_instance.print("\r" + " "*len(ProgressBar.current_instance.previous_print), end="\r")
         ProgressBar.current_instance.print(cstr("[%]").magenta(), msg)
         ProgressBar.current_instance.show()
-
+        MutableClass.mute()
+        
 
 if __name__ == '__main__':
     
@@ -139,5 +122,12 @@ if __name__ == '__main__':
             time.sleep(0.05)
             if i==50:
                 ProgressBar.whisper("Halfway there!")
+        
+    with Task("Computing something heavy again", new_line=True):
+        for i in ProgressBar(range(3), new_line=True):
+            time.sleep(0.5)
+            if i==1:
+                ProgressBar.whisper("Halfway there!")
+            
     
     Message("Success!", "#")
