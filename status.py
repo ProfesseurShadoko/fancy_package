@@ -44,8 +44,29 @@ class MemoryView(MutableClass):
 class TODO(MutableClass):
     def __init__(self, message: str, complete:bool = False):
         prefix = '[x]' if complete else '[ ]'
-        color = 'g' if complete else 'y'
+        color = 'g' if complete else 'r'
         
         self.print(
             f"{cstr(prefix):{color}} TODO: {message}"
         )
+        
+
+class DateTime(MutableClass):
+    def __init__(self):
+        self.print(f"{cstr('[D]').magenta()} {self.time_date()}")
+        
+
+if __name__ == "__main__":
+    from .message import Message
+    
+    with Message("Displaying memory usage:"):
+        MemoryView()
+        
+    Message.par()
+    with Message("Making TODO list:"):
+        TODO("This is a test TODO item.")
+        TODO("This is a completed TODO item.", complete=True)
+        
+    Message.par()
+    with Message("Displaying current date and time:"):
+        DateTime()
