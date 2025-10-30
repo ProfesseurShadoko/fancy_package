@@ -2,8 +2,14 @@
 
 
 from .mutable_class import MutableClass
+from .message import Message
 from .fancy_string import cstr
-import psutil, os
+try:
+    import psutil
+except ImportError:
+    Message("psutil is required for fancy_package.status. Please install it via 'pip install psutil'.", "!")
+    
+import os
 
 class MemoryView(MutableClass):
     
