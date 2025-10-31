@@ -88,7 +88,7 @@ class ProgressBar(MutableClass):
         
         delta_time = time.time() - self.previous_print_time
         
-        if next_print != self.previous_print and delta_time > 0.1:
+        if next_print != self.previous_print and delta_time > 0.05:
             self.previous_print = next_print
             self.previous_print_time = time.time()
             
@@ -129,9 +129,13 @@ if __name__ == '__main__':
         
     with Task("Computing something heavy again", new_line=True):
         for i in ProgressBar(range(3), new_line=True):
-            time.sleep(0.5)
+            time.sleep(1)
             if i==1:
                 ProgressBar.whisper("Halfway there!")
+                
+    with Task("Computing something fast, no every step is printed!", new_line=True):
+        for i in ProgressBar(range(10_000), size=10000):
+            time.sleep(0.0001)
             
     
     Message("Success!", "#")
