@@ -45,6 +45,7 @@ class ProgressBar(MutableClass):
         self.start_time = time.time()
         
         self.previous_print = ""
+        self.previous_print_time = -999
         
         self.new_line = new_line
         
@@ -85,8 +86,11 @@ class ProgressBar(MutableClass):
             remaining_time = time_of_one_iteration * (self.max-self.count)
             next_print += f"Time remaining: {self.time(remaining_time)}"
         
-        if next_print != self.previous_print:
+        delta_time = time.time() - self.previous_print_time
+        
+        if next_print != self.previous_print and delta_time > 0.1:
             self.previous_print = next_print
+            self.previous_print_time = time.time()
             
             MutableClass.unmute()
             self.print(
