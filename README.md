@@ -86,6 +86,14 @@ with Message("The following messages will be indented"):   # increase indentatio
 Message("This won't be indented")
 ```
 
+## Examples
+
+Run the command:
+```bash
+python -m fancy_package.<filename_without_dot_py>
+```
+to see examples of what can be done with this package!
+
 
 ## Development notes
 
