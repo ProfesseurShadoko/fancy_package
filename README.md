@@ -45,11 +45,9 @@ Tasks and timing
 from fancy_package import Task
 import time
 
-with Task("Compute important thing"):
+with Task("Compute something heavy"):
 	time.sleep(1.2)
 
-with Task("Quiet task", new_line=False):
-	time.sleep(0.3)
 ```
 
 Progress bar
@@ -79,6 +77,10 @@ from fancy_package import MutableClass, Message
 
 MutableClass.mute()       # globally mute printing
 MutableClass.unmute()
+
+with Message.mute():
+	Message.print("This won't be printed")
+Message.print("This will be printed again!")
 
 with Message("The following messages will be indented"):   # increase indentation for nested prints
 	Message.print("This will be indented")
