@@ -23,16 +23,17 @@ class Task(MutableClass):
         """
         self._new_line = new_line
         self.msg = msg
-    
-        
+        self.spirit = self.create_spirit("") # placeholder spirit
+       
     def _complete(self) -> None:
         Task.last_task_runtime = time.time() - self.start_time
         
-        if self._new_line:
+        if not self.spirit.is_alive():
             self.print(
                 cstr('[~]').blue(), "Task completed after:", cstr(self.time(Task.last_task_runtime)).blue()
             )
         else:
+            self.spirit.kill()
             self.print(
                 f" ({cstr(self.time(time.time()-self.start_time)).blue()})", ignore_tabs=True
             )
@@ -55,8 +56,10 @@ class Task(MutableClass):
     def __enter__(self):
         self.__class__.running_tasks.append(self)
         self.print(
-            cstr('[~]').blue(), self.msg, end='\n' if self._new_line else ' '
+            cstr('[~]').blue(), self.msg, end=''
         )
+        self.spirit = self.create_spirit("\n")
+        
         self.start_time = time.time()
         super().__enter__() # add to the indentation level
     
@@ -77,21 +80,15 @@ if __name__ == '__main__':
     from .message import Message
     Message("Testing task class.")
     
-    with Task("Computing something heavy", new_line=False):
+    with Task("Computing something heavy"):
         time.sleep(1)
     
     with Task("Computing many things"):
-        for i in range(3):
-            if i==1:
-                Task.mute()
-                Message.mute()
-                
-            with Task(f"Computing thing {i+1}", new_line=False):
+        for i in range(3):               
+            with Task(f"Computing thing {i+1}"):
                 time.sleep(1)
             Message(f"Computation {i+1}/3 successful", "#")
-            Task.unmute()
-            Message.unmute()
-    
-    with Task("Computing something brocken"):
+
+    with Task("Computing something broken"):
         time.sleep(1)
         x = 1/0

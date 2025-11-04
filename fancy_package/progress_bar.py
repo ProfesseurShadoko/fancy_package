@@ -12,7 +12,7 @@ class ProgressBar(MutableClass):
     current_instance = None
 
     
-    def __init__(self, lst, size:int=None, new_line:bool = False) -> None:
+    def __init__(self, lst, size:int=None) -> None:
         """
         Simple iterator that prints the progress of the iteration and the remaining time.
         
@@ -46,11 +46,7 @@ class ProgressBar(MutableClass):
         
         self.previous_print = ""
         self.previous_print_time = -999
-        
-        self.new_line = new_line
-        
-        if not self.new_line:
-            MutableClass.mute()
+        self.spirit = self.create_spirit("") # always create default spirit
         
     
     def __iter__(self) -> 'ProgressBar':
@@ -66,11 +62,9 @@ class ProgressBar(MutableClass):
         try:
             return next(self.list)
         except StopIteration:
-            if not self.new_line:
-                MutableClass.unmute()
+            self.spirit.kill() # remove the spirit from the print stack
             self.print(
-                cstr("[%]").magenta(),
-                " Done!" + " "*50,
+                f'{cstr("[%]").magenta() + " Done!":<50}'
             )
             raise(StopIteration())
     
@@ -92,12 +86,14 @@ class ProgressBar(MutableClass):
             self.previous_print = next_print
             self.previous_print_time = time.time()
             
-            MutableClass.unmute()
+            # we are printing comething with "\r", therefore we need a spirit so that someone else doesn't interrupt us
+            self.spirit.kill()  # remove the spirit from the print stack
             self.print(
                 next_print + " "*10,
-                end=("\r" if not self.new_line else "\n")
+                end="\r"
             )
-            MutableClass.mute()
+            self.spirit = self.create_spirit("\n")
+            
             
         
     @staticmethod
@@ -105,18 +101,15 @@ class ProgressBar(MutableClass):
         """
         Print a message without affecting the progress bar. Progress bar will be reprinted after the message.
         """
-        if ProgressBar.current_instance is None:
-            MutableClass.unmute()
-            ProgressBar.print(cstr("[%]").magenta(), msg)
-            MutableClass.mute()
-            return
-        
+        if ProgressBar.current_instance is None: # should not happen, I guess whisper is always inside a progressbar loop
+            return ProgressBar.print(cstr("[%]").magenta(), msg)
+
         # 1. Erase the current progress bar
-        MutableClass.unmute()
-        ProgressBar.current_instance.print("\r" + " "*len(ProgressBar.current_instance.previous_print), end="\r")
-        ProgressBar.current_instance.print(cstr("[%]").magenta(), msg)
+        ProgressBar.current_instance.spirit.kill()  # remove the spirit from the print stack
+        to_print = cstr("[%]").magenta() + " " + msg
+        ProgressBar.current_instance.print("\r", end="")
+        ProgressBar.current_instance.print(f"{to_print:<{len(ProgressBar.current_instance.previous_print)}}")
         ProgressBar.current_instance.show()
-        MutableClass.mute()
         
 
 if __name__ == '__main__':
@@ -127,13 +120,13 @@ if __name__ == '__main__':
             if i==50:
                 ProgressBar.whisper("Halfway there!")
         
-    with Task("Computing something heavy again", new_line=True):
-        for i in ProgressBar(range(3), new_line=True):
+    with Task("Computing something heavy again"):
+        for i in ProgressBar(range(3)):
             time.sleep(1)
             if i==1:
                 ProgressBar.whisper("Halfway there!")
                 
-    with Task("Computing something fast, no every step is printed!", new_line=True):
+    with Task("Computing something fast, no every step is printed!"):
         for i in ProgressBar(range(10_000), size=10000):
             time.sleep(0.0001)
             

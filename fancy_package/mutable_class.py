@@ -1,7 +1,7 @@
 
 from .fancy_string import cstr
 from .fancy_context_manager import FancyCM
-
+from .print_stack import pStack, Spirit
 
 
 
@@ -100,6 +100,17 @@ class MutableClass(FancyCM):
     @staticmethod
     def par() -> None:
         MutableClass.print()
+    
+    @staticmethod
+    def create_spirit(spirit_message:str) -> Spirit:
+        """
+        Create a Spirit with the given message. Adds it to the print stack. Returns the spirit so that it can be killed later.
+        The spirit isn't added to the stack if the class is muted though.
+        """
+        spirit = Spirit(spirit_message)
+        if not MutableClass.muted():
+            pStack.push(spirit)
+        return spirit
         
     
     # ------------- #
