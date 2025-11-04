@@ -3,7 +3,7 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fancy_package"
+name = "oakley"
 version = "2.0.0"
 
 dependencies = [

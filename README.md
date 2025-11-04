@@ -1,5 +1,5 @@
 
-# fancy_package
+# oakley
 
 A small collection of lightweight, opinionated utilities for printing "fancy" console output in Python: colored strings, pretty messages, simple progress bars, task context managers, and tiny system/status helpers.
 
@@ -18,7 +18,7 @@ This package is designed for developer convenience when running short scripts or
 
 You can downlaod the package from my GitHub repository with this command:
 ```bash
-pip install git+https://github.com/ProfesseurShadoko/fancy_package.git
+pip install git+https://github.com/ProfesseurShadoko/oakley.git
 ```
 
 ## Quick examples
@@ -26,7 +26,7 @@ pip install git+https://github.com/ProfesseurShadoko/fancy_package.git
 Colored strings
 
 ```python
-from fancy_package import cstr
+from oakley import cstr
 print(cstr('hello world').green().bold())
 print(f"Progress: {cstr('ok'):g}")  # short color spec
 ```
@@ -34,7 +34,7 @@ print(f"Progress: {cstr('ok'):g}")  # short color spec
 Pretty messages
 
 ```python
-from fancy_package import Message
+from oakley import Message
 Message("Build succeeded", "#")       # green success prefix
 Message("Something might be wrong", "?")
 ```
@@ -42,7 +42,7 @@ Message("Something might be wrong", "?")
 Tasks and timing
 
 ```python
-from fancy_package import Task
+from oakley import Task
 import time
 
 with Task("Compute something heavy"):
@@ -53,7 +53,7 @@ with Task("Compute something heavy"):
 Progress bar
 
 ```python
-from fancy_package import ProgressBar
+from oakley import ProgressBar
 import time
 
 for i in ProgressBar(range(50), size=50):
@@ -65,7 +65,7 @@ for i in ProgressBar(range(50), size=50):
 Status helpers
 
 ```python
-from fancy_package import MemoryView, TODO
+from oakley import MemoryView, TODO
 MemoryView()              # prints a short memory usage line (requires psutil)
 TODO("Refactor the parser")
 ```
@@ -73,7 +73,7 @@ TODO("Refactor the parser")
 Mute and indentation
 
 ```python
-from fancy_package import MutableClass, Message
+from oakley import MutableClass, Message
 
 MutableClass.mute()       # globally mute printing
 MutableClass.unmute()
@@ -90,11 +90,13 @@ Message("This won't be indented")
 
 ## Examples
 
-Run the command:
+Take a look at [this notebook](example.ipynb).
+
+Alternatively, run the command:
 ```bash
-python -m fancy_package.<filename_without_dot_py>
+python -m oakley.<filename_without_dot_py>
 ```
-to see examples of what can be done with this package!
+to see examples for each object.
 
 
 ## Development notes

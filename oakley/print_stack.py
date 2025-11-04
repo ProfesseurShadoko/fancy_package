@@ -87,9 +87,42 @@ class PrintListener:
         return len(self.secret_commonwealth) == 0
     
     
+
+
+# ----------------------------- #
+# !-- Handle Jupyter Issues --! #
+# ----------------------------- #
+
+# detect Jupyter
+def in_notebook() -> bool:
+    try:
+        from IPython import get_ipython
+        shell = get_ipython().__class__.__name__
+        return shell == "ZMQInteractiveShell"
+    except Exception:
+        return False
+
+if not in_notebook():    
+    pStack = PrintListener(sys.stdout)
+    sys.stdout = pStack
+    
+else:
+    
+    # get Outstream
+    from ipykernel.iostream import OutStream
         
-pStack = PrintListener(sys.stdout)
-sys.stdout = pStack
+    class JupyterPrintListener(PrintListener, OutStream):
+        
+        def __init__(self, original_stdout):
+            PrintListener.__init__(self, original_stdout)
+            self.__dict__.update(original_stdout.__dict__)
+    
+    pStack = JupyterPrintListener(sys.stdout)
+    sys.stdout = pStack
+
+        
+        
+
 
 
 

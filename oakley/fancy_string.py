@@ -80,6 +80,9 @@ class Cstr(str):
         return self.__class__(
             self._COLORS["cyan"] + self + self._COLORS["reset"]
         )
+        
+    def white(self) -> 'Cstr':
+        return self
     
     
     #############
@@ -121,17 +124,37 @@ class Cstr(str):
             return self
     
         colors = [
-            'green', 'blue', 'red', 'yellow', 'magenta', 'cyan'
+            'green', 'blue', 'red', 'yellow', 'magenta', 'cyan', 'white'
         ]
-        allowed_specs = colors + [c[0] for c in colors]
-        assert format_spec in allowed_specs, f"Invalid format specifier: {format_spec}. Must be one of {allowed_specs}."
+        fonts = [
+            'bold', 'underline', 'italic', 'strikethrough', 'highlight'
+        ]
         
-        if len(format_spec) == 1:
-            for color in colors:
-                if color.startswith(format_spec):
-                    return getattr(self,color)()
+        color_spec = format_spec[0]
+        if len(format_spec) > 1:
+            font_spec = format_spec[1:]
+        else:
+            font_spec = ''
+        assert len(format_spec) <= 2, f"Invalid format specifier: {format_spec}. Must be one or two characters long."
         
-        return getattr(self,format_spec)()
+        allowed_color_specs = [c[0] for c in colors]
+        allowed_font_specs = [f[0] for f in fonts] + ['']
+        
+        assert color_spec in allowed_color_specs, f"Invalid format specifier: {format_spec}. Must be one of {allowed_color_specs}."
+        assert font_spec in allowed_font_specs, f"Invalid format specifier: {format_spec}. Must be one of {allowed_font_specs}."
+        
+        out = self
+        
+        # 1. Add the color to the string
+        color = [c for c in colors if c.startswith(color_spec)][0] # there is only one anyway
+        out = getattr(out, color)()
+        
+        # 2. Add the font to the string
+        if font_spec:
+            font = [f for f in fonts if f.startswith(font_spec)][0]
+            out = getattr(out, font)()
+            
+        return out
 
 
 def cstr(obj:object, format_spec:str='') -> 'Cstr':

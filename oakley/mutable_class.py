@@ -150,6 +150,15 @@ class MutableClass(FancyCM):
         now = datetime.now()
         return now.strftime("%Y-%m-%d %H:%M:%S")
     
+    @staticmethod
+    def hi() -> None:
+        """
+        Prints a friendly greeting.
+        """
+        MutableClass.print("The Secret Commonwealth greets you!")
+
+        
+    
     
     
     

@@ -3,6 +3,7 @@
 from .fancy_string import cstr
 from .mutable_class import MutableClass
 from typing import Literal
+import os
 
 
 
@@ -63,6 +64,13 @@ class Message(MutableClass):
             1: ['?', '!'],
             2: ['!']
         }[lvl]
+        
+    @staticmethod
+    def cwd() -> None:
+        """
+        Prints the current working directory.
+        """
+        Message(f"Current working directory: {cstr(os.getcwd()):g}", "#")
 
 
 
