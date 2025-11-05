@@ -6,9 +6,7 @@ from .fancy_string import cstr
 
 class FancyCM:
     """
-    Fancy Context Manager.
-    
-    TODO: enable to possiblity of 'and' operator when using multiple context managers.
+    Updates some counter on enter/exit.
     """
     lvl = 0
     

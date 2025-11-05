@@ -4,12 +4,11 @@
 from .mutable_class import MutableClass
 from .message import Message
 from .fancy_string import cstr
-try:
-    import psutil
-except ImportError:
-    Message("psutil is required for fancy_package.status. Please install it via 'pip install psutil'.", "!")
-    
+
 import os
+import gc
+import sys
+
 
 class MemoryView(MutableClass):
     
@@ -28,6 +27,7 @@ class MemoryView(MutableClass):
         """
         Returns the current memory usage of the process in MB.
         """
+        import psutil
         process = psutil.Process(os.getpid())
         memory = process.memory_info().rss / (1024 ** 3)  # in GB
         return memory
@@ -36,6 +36,7 @@ class MemoryView(MutableClass):
         """
         Returns the available memory in GB.
         """
+        import psutil
         memory = psutil.virtual_memory().total / (1024 ** 3)  # in GB
         return memory
     
@@ -43,8 +44,38 @@ class MemoryView(MutableClass):
         """
         Returns the available memory in GB.
         """
+        import psutil
         memory = psutil.virtual_memory().available / (1024 ** 3)  # in GB
         return memory
+    
+    @staticmethod
+    def show(top:int=5):
+        """
+        Shows the memory usage of the top <top> memory-consuming processes.
+        """
+        gc.collect()
+        all_objects = gc.get_objects()
+        
+        # get all individual types and their total memory usage
+        type_memory = {}
+        for obj in all_objects:
+            obj_type = type(obj)
+            try:
+                obj_size = sys.getsizeof(obj)
+            except TypeError:
+                obj_size = 0
+            type_memory[obj_type] = type_memory.get(obj_type, 0) + obj_size
+        
+        # sort by memory usage
+        sorted_types = sorted(type_memory.items(), key=lambda x: x[1], reverse=True)
+        
+        # dispaly the 10 first
+        with MemoryView():
+            for i, (obj_type, total_size) in enumerate(sorted_types[:top], 1):
+                size_mb = total_size / (1024 ** 2)
+                print(f"{i}. Type: {cstr(obj_type.__name__):bb}, Total Size: {size_mb:.2f} MB")
+    
+    
     
     
 class TODO(MutableClass):
