@@ -69,12 +69,16 @@ class MemoryView(MutableClass):
         # sort by memory usage
         sorted_types = sorted(type_memory.items(), key=lambda x: x[1], reverse=True)
         
-        # dispaly the 10 first
+        # dispaly the N first
+        if top > len(sorted_types):
+            top = len(sorted_types)
+            
         with MemoryView():
             for i, (obj_type, total_size) in enumerate(sorted_types[:top], 1):
                 size_mb = total_size / (1024 ** 2)
-                print(f"{i}. Type: {cstr(obj_type.__name__):bb}, Total Size: {size_mb:.2f} MB")
-    
+                MemoryView.untab()
+                MemoryView.print(f" {i}. Type: {cstr(obj_type.__name__):bb}, Total Size: {size_mb:.2f} MB")
+                MemoryView.tab()
     
     
     
