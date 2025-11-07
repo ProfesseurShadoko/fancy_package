@@ -29,6 +29,7 @@ Colored strings
 from oakley import cstr
 print(cstr('hello world').green().bold())
 print(f"Progress: {cstr('ok'):g}")  # short color spec
+print(f"{cstr('Done'):gb}")  # in green and bold
 ```
 
 Pretty messages
@@ -102,5 +103,5 @@ to see examples for each object.
 ## Development notes
 
 - The package is intentionally tiny and uses ANSI escape sequences for coloring; compatibility is best on UNIX-like terminals.
-- `MemoryView` depends on `psutil` — consider making that optional or guarding import-time behavior in environments where `psutil` is not available.
+- `MemoryView` depends on `psutil` — the package runs fine even when `psutil` is not available, but the `MemoryView` object cannot be used.
 - There are simple demo blocks in each module under `if __name__ == '__main__'` for manual testing.
