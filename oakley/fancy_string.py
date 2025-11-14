@@ -159,13 +159,56 @@ class Cstr(str):
 
 def cstr(obj:object, format_spec:str='') -> 'Cstr':
     """
-    A Cstr (Colored String) is an object that inherits from str with possibility to add ANSI color codes to the string (see examples below).
-    Any object can be converted to a Cstr object using this function. The possibility to use a format specifier, for floats for example, is possible. The format will be applied before converting the object into a string.
-    
-    Example:
-        >>> x = 3.1416
-        >>> print(cstr(x, '.2f').green())
-        3.14 # in green
+    Convert an object into a color-capable string (`Cstr`).
+
+    This function formats `obj` using Python's built-in ``format`` machinery
+    (e.g. for floats, integers, or custom ``__format__`` implementations),
+    and then wraps the resulting text into a :class:`Cstr` object.  
+    The returned `Cstr` instance supports ANSI colorization, text styles
+    (bold, underline, italic, …), and compact format specifiers.
+
+    Parameters
+    ----------
+    obj : object
+        The object to convert to a colored string. Any object that can be
+        formatted via ``format(obj, format_spec)`` is accepted.
+    format_spec : str, optional
+        Standard Python format specification applied *before*
+        converting the output to a `Cstr`.
+        For example: ``'.2f'``, ``'05d'``, ``'>10s'``, etc.
+
+    Returns
+    -------
+    Cstr
+        A colored-string wrapper that supports methods such as
+        ``.green()``, ``.red()``, ``.bold()``, ``.underline()``,
+        as well as compact format usage inside f-strings (e.g. ``:gb``).
+
+    Notes
+    -----
+    - Color and style transformations are applied *after* formatting.
+    - Inside f-strings, short format specifiers allow concise styling:
+      ``g`` → green, ``r`` → red, ``b`` → blue,  
+      combined with ``b`` for bold, ``u`` for underline, …
+      Examples: ``:gb`` (green + bold), ``:ru`` (red + underline).
+
+    Examples
+    --------
+    Basic usage:
+
+    >>> print(cstr("Hello").green())
+    Hello   # in green
+
+    With numeric formatting:
+
+    >>> x = 3.14159
+    >>> print(cstr(x, '.2f').cyan())
+    3.14    # in cyan
+
+    Using short form styling inside an f-string:
+
+    >>> print(f"Value: {cstr('OK'):gb}")
+    Value: OK   # green + bold
     """
     return Cstr(format(obj, format_spec))
 

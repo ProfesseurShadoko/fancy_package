@@ -11,8 +11,48 @@ import sys
 
 
 class MemoryView(MutableClass):
+    """
+    Display a short summary of the current process and system memory usage.
+
+    Upon instantiation, `MemoryView` prints one line containing:
+    - current process memory usage in GB,
+    - total system memory,
+    - percentage of used memory (color-coded).
+
+    The class also provides helper methods for querying memory usage and
+    a diagnostic function (:meth:`show`) for listing the most memory-heavy
+    Python object types currently alive in the interpreter.
+
+    Notes
+    -----
+    - Requires the ``psutil`` package.
+    - Uses color conventions: green (<50%), yellow (<80%), red (≥80%).
+    - Inherits indentation/mute behavior from :class:`MutableClass`.
+
+    Examples
+    --------
+    >>> MemoryView()
+    [M] Current memory usage: 1.23 GB / 15.92 GB (10%)
+
+    Show the most memory-consuming Python object types (quite useless actually):
+
+    >>> MemoryView.show(top=10)
+    """
     
     def __init__(self):
+        """
+        Print a one-line summary of memory usage.
+
+        Displays:
+        - process memory usage (GB),
+        - total system RAM (GB),
+        - percentage usage with a color-coded indicator.
+
+        Color logic:
+            green   < 50%
+            yellow  < 80%
+            red     > 80%
+        """
         tot_ram = self.get_memory_available() + self.get_memory_usage()
         memory_usage = self.get_memory_usage()/tot_ram
         color_letter = 'g' if memory_usage < 0.5 else 'y' if memory_usage < 0.8 else 'r'
@@ -51,7 +91,31 @@ class MemoryView(MutableClass):
     @staticmethod
     def show(top:int=5):
         """
-        Shows the memory usage of the top <top> memory-consuming processes.
+        Display the largest memory-consuming Python object types.
+
+        This diagnostic tool inspects all live Python objects using ``gc`` and
+        aggregates their memory usage by type. The `top` heaviest types are
+        printed in descending order.
+
+        Parameters
+        ----------
+        top : int, optional
+            Number of object types to display. Default is 5.
+
+        Notes
+        -----
+        - The function measures object sizes using ``sys.getsizeof``.
+        - Output is printed inside a temporary `MemoryView` context so that
+        indentation and formatting remain consistent.
+        - Only Python object heap usage is inspected; external memory (NumPy
+        arrays, GPU buffers, C extensions) may not be included.
+
+        Examples
+        --------
+        >>> MemoryView.show(top=3)
+        1. Type: dict, Total Size: 42.50 MB
+        2. Type: list, Total Size: 21.30 MB
+        3. Type: str,  Total Size: 12.80 MB
         """
         gc.collect()
         all_objects = gc.get_objects()
@@ -83,7 +147,40 @@ class MemoryView(MutableClass):
     
     
 class TODO(MutableClass):
+    """
+    Simple utility for printing TODO entries.
+
+    A TODO item is printed with a small colored prefix:
+    - ``[ ]`` in red   — incomplete
+    - ``[x]`` in green — completed
+
+    Parameters
+    ----------
+    message : str
+        The text of the TODO item.
+    complete : bool, optional
+        Whether the TODO entry is already completed. Default is ``False``.
+
+    Examples
+    --------
+    >>> TODO("Refactor the parser")
+    [ ] TODO: Refactor the parser
+
+    >>> TODO("Implement FFT backend", complete=True)
+    [x] TODO: Implement FFT backend
+    """
+    
     def __init__(self, message: str, complete:bool = False):
+        """
+        Print a TODO entry.
+
+        Parameters
+        ----------
+        message : str
+            Description of the TODO item.
+        complete : bool, optional
+            Whether the TODO is complete. Default ``False``.
+        """
         prefix = '[x]' if complete else '[ ]'
         color = 'g' if complete else 'r'
         
@@ -93,7 +190,26 @@ class TODO(MutableClass):
         
 
 class DateTime(MutableClass):
+    """
+    Display the current date and time in a formatted style.
+
+    When instantiated, prints a one-line timestamp of the form:
+
+        [D] YYYY-MM-DD HH:MM:SS
+
+    Examples
+    --------
+    >>> DateTime()
+    [D] 2025-03-19 14:22:11
+    """
+    
     def __init__(self):
+        """
+        Print the current date and time.
+
+        Uses :meth:`MutableClass.time_date` to format the timestamp as
+        ``YYYY-MM-DD HH:MM:SS``.
+        """
         self.print(f"{cstr('[D]').magenta()} {self.time_date()}")
         
 

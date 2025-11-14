@@ -8,20 +8,53 @@ import time
 
 class Task(MutableClass):
     """
-    Inherits from MutableClass and FancyCM. Must be used as a context manager.
-    Fancy way of printing a task that is being executed. Displays the time taken to execute the task when it is completed.
+    A context manager for timing and displaying the execution of a task.
+
+    `Task` prints a header indicating that the task has started, executes the
+    enclosed code block, and then prints either a completion message or an
+    "aborted" message depending on whether an exception occurred.
+
+    Timing information is automatically appended when the task completes:
+    
+        [~] Compute stuff (2.003s)
+
+    Like `ProgressBar`, this class uses a `Spirit` to guard partial-line output
+    ensuring that other printing in the meantime does not
+    corrupt the task’s output formatting.
+
+    Parameters
+    ----------
+    msg : str
+        The descriptive message for the task.
+
+    
+    Notes
+    -----
+    - `Task` must be used as a context manager using ``with Task(...):``.
+    - If an exception occurs inside the ``with`` block, the task is marked
+      as aborted and the exception is re-raised after printing diagnostics.
+    
+    Examples
+    --------
+    Basic usage:
+
+    >>> with Task("Compute something heavy"):
+    ...     expensive_function()
+
     """
     
     running_tasks = []
     last_task_runtime = None
     
-    def __init__(self, msg:str, new_line:bool = True) -> None:
+    def __init__(self, msg:str) -> None:
         """
-        Args:
-            msg: The message to be printed. 
-            new_line (bool): whether to print the progress on the same line ('') or on a new line ('\n'). If intermediate messages or tasks are printed, it is better to use new_line=True.
+        Initialize a new task wrapper.
+
+        Parameters
+        ----------
+        msg : str
+            The message describing the task being executed.
         """
-        self._new_line = new_line
         self.msg = msg
         self.spirit = self.create_spirit("") # placeholder spirit
        
@@ -39,8 +72,7 @@ class Task(MutableClass):
             )
     
     def _abort(self) -> None:        
-        if not self._new_line:
-            self.print() # we might still be on the line of the first print statement of the Task function, don't stay on the same line
+        self.print() # we might still be on the line of the first print statement of the Task function, don't stay on the same line
 
         self.print(
             cstr('[!]').red(), "Task aborted after:", cstr(self.time(time.time()-self.start_time)).red()

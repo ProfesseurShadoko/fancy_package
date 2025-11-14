@@ -8,21 +8,75 @@ from .status import MemoryView, TODO # TODO: create an function 'mute_all' to mu
 
 
 class ProgressBar(MutableClass):
+    """
+    Lightweight iterator wrapper that prints a dynamic progress bar with
+    estimated remaining time.
+
+    `ProgressBar` is designed to be used directly in iteration loops:
+
+    >>> for x in ProgressBar(range(100)):
+    ...     ...
+
+    The bar updates in-place by printing partial lines (using ``end='\\r'``),
+    meaning that the current line is overwritten continuously instead of
+    producing new lines. To avoid interference from other printing functions
+    during the update, the progress bar registers a `Spirit` that ensures
+    the terminal state is kept consistent (see the documentation of
+    :meth:`MutableClass.create_spirit` for details).
+
+    Parameters
+    ----------
+    lst : iterable
+        The iterable or iterator over which to loop.
+    size : int, optional
+        Length of the iterable. Only required when ``lst`` does not
+        implement ``__len__`` (e.g., when it is a generator). If omitted,
+        the progress bar will attempt to convert the iterable to a list.
+
+    Notes
+    -----
+    - The progress bar prints at most every 0.05 seconds to avoid excessive
+      terminal updates.
+    - Printing occurs on a single line using carriage returns (``'\\r'``).
+    - A `Spirit` is always active during iteration to prevent unrelated
+      printing from corrupting the progress bar display.
+
+    Examples
+    --------
+    Basic usage:
+
+    >>> for _ in ProgressBar(range(50)):
+    ...     time.sleep(0.01)
+
+    Using `whisper` to print a message without breaking the bar:
+
+    >>> for i in ProgressBar(range(100)):
+    ...     if i == 50:
+    ...         ProgressBar.whisper("Halfway there!")
+    """
+    
     
     current_instance = None
 
     
     def __init__(self, lst, size:int=None) -> None:
         """
-        Simple iterator that prints the progress of the iteration and the remaining time.
-        
-        Args:
-            lst: iterable or iterator object (list, range, enumerate, zip, np.array, etc.)
-            size: The size of the list. If the object is an iterator, it may not have a __len__ magic method. In this case, provide the size of the iterator.
-            new_line: whether to print the progress on the same line ('\r') or on a new line ('\n'). If on a new line, other mutable classes wont be muted.
-        
-        Returns:
-            iterator
+        Initialize a new progress bar over the given iterable.
+
+        Parameters
+        ----------
+        lst : iterable
+            The iterable or iterator object (e.g., list, range, enumerate,
+            zip, numpy array).
+        size : int, optional
+            Length of the iterable. Required only if `lst` does not implement
+            ``__len__``. If omitted and length cannot be determined, the
+            iterable is converted to a list, which may be expensive.
+
+        Raises
+        ------
+        AssertionError
+            If the provided object is not iterable.
         """
         super().__init__()
         ProgressBar.current_instance = self
@@ -99,7 +153,26 @@ class ProgressBar(MutableClass):
     @staticmethod
     def whisper(msg:str):
         """
-        Print a message without affecting the progress bar. Progress bar will be reprinted after the message.
+        Print a short message without disrupting the progress bar display.
+
+        A whisper temporarily clears the displayed progress bar, prints the
+        message aligned to the same width, and then restores the bar.
+
+        Parameters
+        ----------
+        msg : str
+            The message to display.
+
+        Notes
+        -----
+        Whispered messages are intended for transient feedback (“Halfway
+        there!”, “Loading…”, etc.) that does not break the flow of the bar.
+
+        Examples
+        --------
+        >>> for i in ProgressBar(range(100)):
+        ...     if i == 50:
+        ...         ProgressBar.whisper("Halfway there!")
         """
         if ProgressBar.current_instance is None: # should not happen, I guess whisper is always inside a progressbar loop
             return ProgressBar.print(cstr("[%]").magenta(), msg)

@@ -10,22 +10,158 @@ import os
 
 class Message(MutableClass):
     """
-    Inherits from MutableClass.
+    A lightweight, styled console message utility.
+
+
+    The ``Message`` class provides formatted console output with optional
+    color coded prefixes indicating importance levels (info, success,
+    warning, error). It inherits global indentation and muting behavior from
+    :class:`MutableClass`, ensuring consistent formatting when used alongside
+    other Oakley utilities.
+
+
+    Messages are printed immediately upon instantiation unless their type is
+    currently muted via :meth:`Message.listen`.
+
+
+    Parameters
+    ----------
+    msg : str
+        The message text to display.
+    type : {'#', '?', '!', 'i'}, optional
+        A one‑character tag defining the message category:
+
+
+            - ``'#'`` — success (green)
+            - ``'i'`` — info (cyan)
+            - ``'?'`` — warning (yellow)
+            - ``'!'`` — error (red)
+
+
+        Default is ``'i'``.
+
+
+    Notes
+    -----
+    Instantiating a ``Message`` automatically prints it. To avoid printing,
+    adjust levels using :meth:`Message.listen` or temporarily mute all
+    messages with the context manager ``Message.mute()``.
     
-    Methods:
-        __init__(...): Constructor. Displays the message.
-        listen(cls, ...): Defines which messages should be displayed, depending on their importance.
     
-    Parent Methods:
-        mute: Mutes the class
-        unmute: Unmutes the class
-        tab: Adds a tabulation to all upcoming messages. Can be used as a context manager.
-        silence: Mutes the class for the duration of the context manager. At the exit of the cm, the class will be automatically unmuted.
+    Examples
+        --------
+        Basic usage:
+
+        >>> from oakley import Message
+        >>> Message("Build succeeded", "#")
+        [#] Build succeeded
+
+        Message levels:
+
+        >>> Message("Informational note.")
+        [i] Informational note.
+        >>> Message("Careful: something looks odd.", "?")
+        [?] Careful: something looks odd.
+        >>> Message("Fatal error encountered.", "!")
+        [!] Fatal error encountered.
+
+        Indentation:
+        
+        >>> with Message("Tab will be handled automatically"):
+                Message("Another indented info message.")
+        ...     Message.print("Another indented info message.") # using Message.print rather than print allows indentation and muting
+            [i] Tab will be handled automatically
+             > [i] Another indented info message.
+             > Another indented info message.
+
+        Listing collections:
+
+        >>> Message("My list:", "i").list([3, 1, 4])
+        [i] My list:
+            > 00: 3
+            > 01: 1
+            > 02: 4
+
+        Muting:
+
+        >>> with Message.mute():
+        ...     Message("This will be hidden.")
+        ...     Message.print("This will also be hidden.")
+        
+        Paragraph:
+        >>> Message.par() # equivalent to print() (but does nothing if muted)
     """
     
     _active = ['i', '#', '?', '!']
     
     def __init__(self, msg:str, type:Literal['#', '?', '!', 'i'] = 'i') -> None:
+        """
+        Construct and display a formatted message.
+
+
+        Parameters
+        ----------
+        msg : str
+            The message string to display.
+        type : {'#', '?', '!', 'i'}, optional
+            The category of message, determining prefix color and
+            whether it is currently active. Default is ``'i'``.
+
+
+        Raises
+        ------
+        AssertionError
+            If ``msg`` is not a string or ``type`` is invalid.
+            
+        Examples
+        --------
+        Basic usage:
+
+        >>> from oakley import Message
+        >>> Message("Build succeeded", "#")
+        [#] Build succeeded
+
+        Message levels:
+
+        >>> Message("Informational note.")
+        [i] Informational note.
+        >>> Message("Careful: something looks odd.", "?")
+        [?] Careful: something looks odd.
+        >>> Message("Fatal error encountered.", "!")
+        [!] Fatal error encountered.
+
+        Indentation:
+
+        >>> with Message.tab():
+        ...     Message("Indented warning", "?")
+            > [?] Indented warning
+        
+        >>> with Message("Tab will be handled automatically"):
+                Message("Another indented info message.")
+        ...     Message.print("Another indented info message.") # using Message.print rather than print allows indentation and muting
+            [i] Tab will be handled automatically
+             > [i] Another indented info message.
+             > Another indented info message.
+
+        Listing collections:
+
+        >>> Message("My list:", "i").list([3, 1, 4])
+        [i] My list:
+            > 00: 3
+            > 01: 1
+            > 02: 4
+
+        Muting:
+
+        >>> with Message.mute():
+        ...     Message("This will be hidden.")
+        ...     Message.print("This will also be hidden.")
+        
+        Paragraph:
+        >>> Message.par() # equivalent to print() (but does nothing if muted)
+        
+        
+        """
         
         assert isinstance(msg, str), f"msg must be a string, not {msg.__class__}"
         assert type in ['#', '?', '!', 'i'], f"type must be one of '#', '?', '!', 'i', not {type}"
@@ -36,6 +172,13 @@ class Message(MutableClass):
     
     
     def _display(self) -> None:
+        """
+        Display the message if its type is currently active.
+
+
+        This method checks ``self.type`` against ``Message._active`` and, if
+        allowed, prints the message with the correct indentation and color.
+        """
         if not self.type in self._active:
             return
         
@@ -44,6 +187,15 @@ class Message(MutableClass):
         )
         
     def _get_prefix(self) -> str:
+        """
+        Return the ANSI colored prefix corresponding to the message type.
+
+
+        Returns
+        -------
+        str
+            A colored tag such as ``'[i]'`` or ``'[!]'``.
+        """
         return {
             '#': cstr('[#]').green(),
             'i': cstr('[i]').cyan(),
@@ -54,10 +206,23 @@ class Message(MutableClass):
     @classmethod
     def listen(cls:type, lvl:int=0) -> None:
         """
-        Defines which messages should be displayed, depending on their importance.
-        
-        Args:
-            lvl (int): The level of importance of the message. 0 lets all messages be displayed, 1 only warnings and errors, 2 only errors.
+        Set the verbosity level controlling which message types are printed.
+
+
+        Parameters
+        ----------
+        lvl : int, optional
+            Verbosity level:
+
+
+                - ``0`` — print all messages (default)
+                - ``1`` — print warnings and errors only
+                - ``2`` — print errors only
+
+
+        Notes
+        -----
+        This method updates ``Message._active`` to filter message types.
         """
         cls._active = {
             0: ['i', '#', '?', '!'],
@@ -68,14 +233,41 @@ class Message(MutableClass):
     @staticmethod
     def cwd() -> None:
         """
-        Prints the current working directory.
+        Print the current working directory as a success style message.
+
+
+        Notes
+        -----
+        Equivalent to calling ``Message(f"Current working directory: ...", '#')``.
         """
         Message(f"Current working directory: {cstr(os.getcwd()):g}", "#")
         
     def list(self, collection:list|dict) -> None:
         """
-        Displays the content of the list by printing them one by one. If the object is a dictionary, it prints the keys and values.
+        Display elements of a list or dictionary in an indented block.
+
+
+        Parameters
+        ----------
+        collection : list or dict
+            The collection to display. Lists and other iterables are converted
+            to ``{index: value}`` form. Dictionaries are displayed as
+            ``key: value`` pairs.
+
+
+        Notes
+        -----
+        - Empty collections print ``"empty"``.
+        - Keys are aligned for readability.
+        - The formatting color depends on the message type.
+
+
+        Examples
+        --------
+        >>> Message("Items:", "?").list([10, 20, 30])
+        >>> Message("User info:").list({"name": "Alice", "age": 30})
         """
+        
         color = {
             "#": "g",
             "?": "y",
