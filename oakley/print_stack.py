@@ -115,7 +115,12 @@ else:
         
         def __init__(self, original_stdout):
             PrintListener.__init__(self, original_stdout)
-            self.__dict__.update(original_stdout.__dict__)
+            
+            for k, v in original_stdout.__dict__.items():
+                if not hasattr(self, k):
+                    # my JupyterPrintListener must have functions of the original stdout, otherwise prints behave very strangely in Jupyer
+                    # but I do not want to overwrite te write() method that handles spirits
+                    setattr(self, k, v)
     
     pStack = JupyterPrintListener(sys.stdout)
     sys.stdout = pStack

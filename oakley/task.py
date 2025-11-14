@@ -82,6 +82,8 @@ if __name__ == '__main__':
     
     with Task("Computing something heavy"):
         time.sleep(1)
+        Message.print("Halfway there...")
+        time.sleep(1)
     
     with Task("Computing many things"):
         for i in range(3):               
