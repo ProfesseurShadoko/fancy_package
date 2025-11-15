@@ -94,17 +94,18 @@ class PrintListener:
 # ----------------------------- #
 
 # detect Jupyter
-def in_notebook() -> bool:
-    try:
-        from IPython import get_ipython
-        shell = get_ipython().__class__.__name__
-        return shell == "ZMQInteractiveShell"
-    except Exception:
-        return False
+try:
+    from IPython import get_ipython
+    shell = get_ipython().__class__.__name__
+    in_notebook = (shell == "ZMQInteractiveShell")
+except Exception:
+    in_notebook = False
+    
 
-if not in_notebook():    
+if not in_notebook:    
     pStack = PrintListener(sys.stdout)
     sys.stdout = pStack
+    
     
 else:
     

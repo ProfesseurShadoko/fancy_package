@@ -346,6 +346,58 @@ class MutableClass(FancyCM):
     # ------------- #
     
     @staticmethod
+    def number(value:float) -> str:
+        """
+        A smart number formatter that adapts based on the size of the number.
+        
+        Examples
+        --------
+        >>> MutableClass.number(1234567)
+        '1.23M'
+        >>> MutableClass.number(1234)
+        '1.23K'
+        >>> MutableClass.number(12.3456)
+        '12.3'
+        >>> MutableClass.number(12) # if class is int
+        '12'
+        >>> MutableClass.number(-0.123456)
+        '-0.123'
+        >>> MutableClass.number(0.00123456)
+        '1.23e-3'
+        """
+        # 1. Check wether integer by checking if number is equal to its int conversion
+        if value == 0:
+            return "0"
+            
+        abs_value = abs(value)
+        
+        if abs_value >= 1e15:
+            return f"{value:.2e}"
+        if abs_value >= 1e9:
+            return f"{value/1e9:.2f}B"
+        if abs_value >= 1e6:
+            return f"{value/1e6:.2f}M"
+        elif abs_value >= 1e3:
+            return f"{value/1e3:.2f}k"
+        elif abs_value >= 100:
+            return f"{value:.0f}"
+        elif abs_value >= 10:
+            if isinstance(value, int):
+                return f"{value:.0f}"
+            return f"{value:.1f}"
+        elif abs_value >= 1:
+            if isinstance(value, int):
+                return f"{value:.0f}"
+            return f"{value:.2f}"
+        elif abs_value >= 1e-2:
+            return f"{value:.3f}"
+        else:
+            return f"{value:.2e}"
+        
+    
+        
+    
+    @staticmethod
     def time(seconds:float) -> str:
         """
         Convert a duration in seconds into a formatted string.

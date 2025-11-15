@@ -1,6 +1,8 @@
 
 from typing import Literal
-
+import re
+ANSI_RE = re.compile(r'\033\[[0-9;]*m')
+from .print_stack import in_notebook
 
 class Cstr(str):
     """
@@ -155,6 +157,15 @@ class Cstr(str):
             out = getattr(out, font)()
             
         return out
+    
+    def length(self) -> int:
+        """
+        Returns the length of the string without ANSI escape codes.
+        """
+        if not in_notebook:
+            return len(ANSI_RE.sub('', self))
+        else:
+            return len(self)
 
 
 def cstr(obj:object, format_spec:str='') -> 'Cstr':
@@ -218,4 +229,9 @@ if __name__ == '__main__':
     x = 3.1416
     print(cstr(x, '.2f').green().bold())
     print(f"This was the number PI in {cstr('green'):g} color.")
+    
+    # testing the length method
+    s = "Hello, World!"
+    colored_s = cstr(s).red().bold().underline()
+    print(f"Original length: {len(s)}, Colored length: {colored_s.length()}, len(colored_s): {len(colored_s)}")
     
