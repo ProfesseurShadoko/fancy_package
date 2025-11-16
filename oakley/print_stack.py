@@ -31,10 +31,28 @@ class Spirit:
         Checks whether the spirit is still alive.
         """
         return self.alive
+    
+    
+
+# ------------------------------------- #
+# !-- Handle Notebook compatibility --! #
+# ------------------------------------- #    
+
+try:
+    from IPython import get_ipython
+    shell = get_ipython()
+    in_notebook = (shell is not None)
+    
+    from ipykernel.iostream import OutStream
+    inherit_from = OutStream if in_notebook else object
+except Exception:
+    in_notebook = False
+    inherit_from = object
+
         
         
 
-class PrintListener:
+class PrintListener(inherit_from):
     """
     The PrintListener collects the spirits that are pushed onto it, and prints them in chronological order.
     Each time the standard `print` function is called, the messages of the spirits are printed first, and 
@@ -44,6 +62,11 @@ class PrintListener:
     def __init__(self, original_stdout):
         self.original_stdout = original_stdout
         self.secret_commonwealth:list[Spirit] = [] # we put spirits inside
+        
+        # copy all the attributes of the original stdout to pStack, in case it has any special behavior
+        for k, v in original_stdout.__dict__.items():
+            if not hasattr(self, k):
+                setattr(self, k, v)
         
     def write(self, message):
         """
@@ -89,45 +112,13 @@ class PrintListener:
     
 
 
-# ----------------------------- #
-# !-- Handle Jupyter Issues --! #
-# ----------------------------- #
+    
+ 
+pStack = PrintListener(sys.stdout)
+sys.stdout = pStack
 
-# detect Jupyter
-try:
-    from IPython import get_ipython
-    shell = get_ipython().__class__.__name__
-    in_notebook = (shell == "ZMQInteractiveShell")
-except Exception:
-    in_notebook = False
-    
 
-if not in_notebook:    
-    pStack = PrintListener(sys.stdout)
-    sys.stdout = pStack
-    
-    
-else:
-    
-    # get Outstream
-    from ipykernel.iostream import OutStream
-        
-    class JupyterPrintListener(PrintListener, OutStream):
-        
-        def __init__(self, original_stdout):
-            PrintListener.__init__(self, original_stdout)
-            
-            for k, v in original_stdout.__dict__.items():
-                if not hasattr(self, k):
-                    # my JupyterPrintListener must have functions of the original stdout, otherwise prints behave very strangely in Jupyer
-                    # but I do not want to overwrite te write() method that handles spirits
-                    setattr(self, k, v)
-    
-    pStack = JupyterPrintListener(sys.stdout)
-    sys.stdout = pStack
 
-        
-        
 
 
 
