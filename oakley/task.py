@@ -95,7 +95,7 @@ class Task(MutableClass):
         
         # if we are in an unknown environment, always go to new_line
         if in_notebook and _notebook_is_unknown:
-            print(self.spirit.kill(), end='') # go to new line immediately
+            Task.print(self.spirit.kill(), end='') # go to new line immediately
         
         self.start_time = time.time()
         super().__enter__() # add to the indentation level
