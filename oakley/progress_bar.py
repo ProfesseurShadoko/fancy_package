@@ -351,12 +351,15 @@ class ProgressBar(MutableClass):
         ...         ProgressBar.whisper("Halfway there!")
         """
         if ProgressBar.current_instance is None: # should not happen, I guess whisper is always inside a progressbar loop
-            return ProgressBar.print(msg)
+            header = cstr("[%]").green()
+            return ProgressBar.print(header + " " + msg)
 
         # 1. Erase the current progress bar
         ProgressBar.current_instance.spirit.kill()  # remove the spirit from the print stack
-        to_print = msg
+        header = cstr("[%]").red()
+        to_print = header + " " + msg
         ProgressBar.current_instance._print_pb(to_print)
+        ProgressBar.current_instance.previous_print_time = -999 # so that it prints again right away
         ProgressBar.current_instance.show()
         
         
@@ -403,16 +406,17 @@ class ProgressBar(MutableClass):
         }[progressbar_size]
 
     @staticmethod
-    def set_spinner(spinner_list:list|int = 0):
+    def set_spinner(spinner_list:list|int|str = 0):
         """
         Sets the spinner characters used in progress bars.
 
         Parameters
         ----------
-        spinner_list : list of str or int, optional
+        spinner_list : list of str or str or int, optional
             A list of strings representing the spinner characters to cycle
             through during progress updates. If an integer is provided, it
-            selects a predefined spinner preset.
+            selects a predefined spinner preset. If a string, the spinner
+            is defined by the lsit fo characters.
 
         Notes
         -----
@@ -459,6 +463,10 @@ if __name__ == '__main__':
             time.sleep(0.03)
             if i==50:
                 ProgressBar.whisper("Halfway there!")
+            if i==70:
+                Message("Messages work as well")
+            if i==90:
+                print("And the standard 'print' as well")
                 
     # 4. Testing other prints
     with Message("Testing normal prints"):
