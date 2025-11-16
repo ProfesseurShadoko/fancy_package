@@ -44,10 +44,12 @@ try:
     from IPython import get_ipython
     shell = get_ipython()
     in_notebook = (shell is not None)
+    _notebook_is_unknown = (shell != "ZMQInteractiveShell")
 except Exception:
     in_notebook = False
 
         
+
 
 class PrintListener(Base):
     """
@@ -112,7 +114,9 @@ class PrintListener(Base):
     
  
 pStack = PrintListener(sys.stdout)
-sys.stdout = pStack
+
+if not (in_notebook and _notebook_is_unknown):
+    sys.stdout = pStack # I know it works for Jupyter and normal python. However, it does not work in collab. So we disable it there.
 
 
 
