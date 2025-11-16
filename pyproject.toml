@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oakley"
-version = "2.1.3"
+version = "2.1.4"
 
 dependencies = [
     "psutil>=5.9"

@@ -438,6 +438,8 @@ class ProgressBar(MutableClass):
             assert spinner_list in spinner_lists, f"Invalid spinner preset index {spinner_list}. Choose among {list(spinner_lists.keys())}."
             spinner_list = spinner_lists[spinner_list]
         
+        if isinstance(spinner_list, str):
+            spinner_list = list(spinner_list)
         assert all(isinstance(s, str) for s in spinner_list), "All spinner elements must be strings."
         config["spinner"] = spinner_list
         
