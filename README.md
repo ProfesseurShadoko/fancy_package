@@ -22,7 +22,7 @@ pip install oakley
 ```
 Alternatively, you can download the most up-to-date version from my github repository:
 ```bash
-pip install git+https://github.com/ProfesseurShadoko/garmin_analytics.git
+pip install git+https://github.com/ProfesseurShadoko/oakley.git
 ```
 
 ## Quick examples
