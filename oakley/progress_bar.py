@@ -137,6 +137,7 @@ class ProgressBar(MutableClass):
             return next(self.list)
         except StopIteration:
             self.spirit.kill() # remove the spirit from the print stack
+            ProgressBar.current_instance = None # delete the progressbar, as the loop has ended
             self.print(ignore_tabs=True) # go to next line
             raise(StopIteration())
         
