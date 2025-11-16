@@ -38,21 +38,18 @@ class Spirit:
 # !-- Handle Notebook compatibility --! #
 # ------------------------------------- #    
 
+Base = type(sys.stdout)
+
 try:
     from IPython import get_ipython
     shell = get_ipython()
     in_notebook = (shell is not None)
-    
-    from ipykernel.iostream import OutStream
-    inherit_from = OutStream if in_notebook else object
 except Exception:
     in_notebook = False
-    inherit_from = object
 
         
-        
 
-class PrintListener(inherit_from):
+class PrintListener(Base):
     """
     The PrintListener collects the spirits that are pushed onto it, and prints them in chronological order.
     Each time the standard `print` function is called, the messages of the spirits are printed first, and 
