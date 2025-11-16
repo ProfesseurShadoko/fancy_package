@@ -4,6 +4,7 @@ from .fancy_string import cstr
 from .fancy_context_manager import FancyCM   
 from typing import Literal
 import time
+from .print_stack import in_notebook, _notebook_is_unknown
 
 
 class Task(MutableClass):
@@ -91,6 +92,10 @@ class Task(MutableClass):
             cstr('[~]').blue(), self.msg, end=''
         )
         self.spirit = self.create_spirit("\n")
+        
+        # if we are in an unknown environment, always go to new_line
+        if in_notebook and _notebook_is_unknown:
+            print(self.spirit.kill(), end='') # go to new line immediately
         
         self.start_time = time.time()
         super().__enter__() # add to the indentation level
