@@ -16,9 +16,13 @@ This package is designed for developer convenience when running short scripts or
 
 ## Installation
 
-You can downlaod the package from my GitHub repository with this command:
+You can downlaod the package with this command:
 ```bash
 pip install oakley
+```
+Alternatively, you can download the most up-to-date version from my github repository:
+```bash
+pip install git+https://github.com/ProfesseurShadoko/garmin_analytics.git
 ```
 
 ## Quick examples
