@@ -91,7 +91,7 @@ Message("This won't be indented")
 
 ## Examples
 
-Take a look at [this notebook](example.ipynb).
+Take a look at [this notebook](https://github.com/ProfesseurShadoko/oakley/blob/main/example.ipynb) for the most detailed and up to date examples.
 
 Alternatively, run the command:
 ```bash

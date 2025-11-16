@@ -1,2 +1,4 @@
 *.json
 __pycache__/
+dist/
+oakley.egg-info/
