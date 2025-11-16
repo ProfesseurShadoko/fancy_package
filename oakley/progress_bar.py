@@ -5,6 +5,9 @@ import time
 from .task import Task
 from .message import Message
 from .status import MemoryView, TODO # TODO: create an function 'mute_all' to mute all children of MutableClass
+from .config import config
+from typing import Literal
+from .print_stack import in_notebook
 
 
 class ProgressBar(MutableClass):
@@ -105,6 +108,10 @@ class ProgressBar(MutableClass):
         # keep track of the time of the last 10 steps
         self.time_of_steps = []
         
+        # keep track of this for the spinners
+        self.print_count = 0
+        self.previous_spinner_time = -999
+        
         
     # ------------------------- #
     # !-- Iterator Protocol --! #
@@ -143,8 +150,11 @@ class ProgressBar(MutableClass):
         Returns the header part of the progress bar, which can be either
         a percentage or a spinner if the max is unknown.
         """
-        progress_percent = f"{(int(self.count/self.max*100)):02d}%" if self.max>0 and self.count < self.max else "%"
-        header = cstr(f"[{progress_percent}]")
+        if len(config["spinner"]) == 0 or self.count == self.max:
+            progress_percent = f"{(int(self.count/self.max*100)):02d}%" if self.max>0 and self.count < self.max else "%"
+            header = cstr(f"[{progress_percent}]")
+        else:
+            header = cstr(f"[{config['spinner'][self.print_count % len(config['spinner'])]}]")
         return header.red() if self.count < self.max else header.green()
     
     def _get_bar(self, terminal_width:int) -> str:
@@ -163,15 +173,15 @@ class ProgressBar(MutableClass):
         n_bars_completed = int(bar_width * self.count / self.max)
         n_bars_remaining = bar_width - n_bars_completed
         if n_bars_completed == 0 or n_bars_remaining == 0:
-            sep_char = " "
-        else:
             sep_char = ""
+        else:
+            sep_char = " "
             if n_bars_completed == 0:
                 n_bars_remaining += 1
             if n_bars_remaining == 0:
                 n_bars_completed += 1
             
-        bar = cstr(bar_car*n_bars_completed).green() + " " + cstr(bar_car*n_bars_remaining).red()
+        bar = cstr(bar_car*n_bars_completed).green() + sep_char + cstr(bar_car*n_bars_remaining).red()
         return bar
     
     def _get_stats(self, terminal_width:int) -> str:
@@ -288,9 +298,10 @@ class ProgressBar(MutableClass):
             self.previous_print = msg
             self.previous_print_time = time.time()
             
-            #print("Number to erase:", n_to_erase)
-            #print("Printed:", f"{msg:<{n_to_erase}}", f"(length = {cstr(f'{msg:<{n_to_erase}}').length()})")
-            
+            # 4. Check wether we wan't to update the spinner (at most 10 times per second)
+            if self.previous_print_time - self.previous_spinner_time > 0.1:
+                self.previous_spinner_time = self.previous_print_time
+                self.print_count += 1
             
             
     def _get_terminal_width(self, margin:int = 5, min_value:int=25) -> int:
@@ -299,6 +310,11 @@ class ProgressBar(MutableClass):
         """
         import shutil
         terminal_size = shutil.get_terminal_size((999, 20)).columns
+        
+        # account for provided terminal_size in config
+        if config["terminal_width"] > 0:
+            terminal_size = min(terminal_size, config["terminal_width"]) # if terminal size lower than provided, keep the low one
+        
         n_tab_chars = ProgressBar.indent + 2 if ProgressBar.indent > 0 else 0
         # Also, if the terminal size is lower than 30, we set is to 30. And let's keep an additional 5 characters of margin.
         return max(min_value, terminal_size - n_tab_chars - margin)
@@ -341,6 +357,84 @@ class ProgressBar(MutableClass):
         to_print = msg
         ProgressBar.current_instance._print_pb(to_print)
         ProgressBar.current_instance.show()
+        
+        
+    # --------------- #
+    # !-- Configs --! #
+    # --------------- #
+        
+    @staticmethod
+    def set_size(progressbar_size: Literal["minimal", "small", "medium", "large", "default"] = "default"):
+        """
+        Changes the display of progressbar, from simplest (minimal) to most
+        detailed (default). Only default has an actual progress bar. 
+        
+        The actual terminal width is used anyway, and the bar still adapts to it 
+        if the terminal size is too small for the chosen size.
+        
+        Parameters
+        ----------
+        progressbar_size : {'minimal', 'small', 'medium', 'large', 'default'}, optional
+            The desired size of the progress bar display.
+            - 'minimal': `[03%] [0.061s > 1.974s]`
+            - 'small': `[03%] [0.061s > 1.956s, 49.6 it/s]`
+            - 'medium': `[12%] [0.244s > 1.790s, 49.2 it/s, 12/100]`
+            - 'large': `[10%] ━ ━━━━━━━━━ [0.202s > 1.817s, 4.95 it/s, 1/10]` (10% is exactly one subdivision of the bar)
+            - 'default': `[10%] ━━ ━━━━━━━━━━━━━━━━━━━━━━━ [0.201s > 1.808s, 4.98 it/s, 1/10`
+            
+        Notes
+        -----
+        Different version of Jupyter Notebook may behave differently due to a different way
+        of counting caracters. If so, import `config` from `oakley.config` and change the 
+        `"terminal_width"` argument (try different positive integers, representing the 
+        maximal number of caracters displayed by the colorbar). Negative integer means
+        `default`.
+        """
+        assert progressbar_size in ["minimal", "small", "medium", "large", "default"], "Invalid progressbar size. Choose among 'minimal', 'small', 'medium', 'large', 'default'."
+        
+        # 1. translate argument to terminal width
+        config["terminal_width"] = {
+            "minimal": 30,
+            "small": 50,
+            "medium": 60,
+            "large": 68,
+            "default": -1
+        }[progressbar_size]
+
+    @staticmethod
+    def set_spinner(spinner_list:list|int = 0):
+        """
+        Sets the spinner characters used in progress bars.
+
+        Parameters
+        ----------
+        spinner_list : list of str or int, optional
+            A list of strings representing the spinner characters to cycle
+            through during progress updates. If an integer is provided, it
+            selects a predefined spinner preset.
+
+        Notes
+        -----
+        The spinner will cycle through the provided characters during
+        progress updates.   
+        
+        Using non standard characters may lead to display issues in some
+        terminals (for instance for spinner_list = 2, 3, 4, 5).    
+        """
+        if isinstance(spinner_list, int):
+            spinner_lists = {
+                0: [],
+                1: ['|', '/', '-', '\\'],
+                2: ['◐', '◓', '◑', '◒'],
+                3: ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"],
+                4: ["◴","◷","◶","◵"],
+                5: ["◜", "◝", "◞", "◟"]
+            }
+            assert spinner_list in spinner_lists, f"Invalid spinner preset index {spinner_list}. Choose among {list(spinner_lists.keys())}."
+            spinner_list = spinner_lists[spinner_list]
+        
+        assert all(isinstance(s, str) for s in spinner_list), "All spinner elements must be strings."
+        config["spinner"] = spinner_list
         
 
 if __name__ == '__main__':
@@ -400,7 +494,7 @@ if __name__ == '__main__':
             return self.terminal_width  
                 
     
-    for width in [40, 50, 70, 80]:
+    for width in [30, 40, 50, 70, 80]:
         with Message(f"Testing terminal width = {width}"):
             for i in LengthMeasuringPB(width, range(100)):
                 time.sleep(0.02)
