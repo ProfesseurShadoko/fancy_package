@@ -18,7 +18,7 @@ This package is designed for developer convenience when running short scripts or
 
 You can downlaod the package from my GitHub repository with this command:
 ```bash
-pip install git+https://github.com/ProfesseurShadoko/oakley.git
+pip install oakley
 ```
 
 ## Quick examples

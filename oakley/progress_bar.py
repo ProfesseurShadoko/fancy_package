@@ -290,7 +290,7 @@ class ProgressBar(MutableClass):
         """
         if msg != self.previous_print:
             n_to_erase = cstr(self.previous_print).length()
-            n_to_erase = min(self._get_terminal_width(min_value=0, margin=5), n_to_erase)
+            n_to_erase = min(self._get_terminal_width(min_value=0, margin=5, _ignore_config=True), n_to_erase)
             self.print("\r", end="", ignore_tabs=True) # go back to the beginning of the line
             n_spaces = max(0, n_to_erase - cstr(msg).length())
             self.print(msg + n_spaces*" ", end="\n" if newline else "") # go back to the beginning of the line and erase previous content
@@ -305,7 +305,7 @@ class ProgressBar(MutableClass):
                 self.print_count += 1
             
             
-    def _get_terminal_width(self, margin:int = 5, min_value:int=25) -> int:
+    def _get_terminal_width(self, margin:int = 5, min_value:int=25, _ignore_config:bool = False) -> int:
         """
         Returns the current terminal width in number of characters.
         """
@@ -313,7 +313,7 @@ class ProgressBar(MutableClass):
         terminal_size = shutil.get_terminal_size((999, 20)).columns
         
         # account for provided terminal_size in config
-        if config["terminal_width"] > 0:
+        if config["terminal_width"] > 0 and not _ignore_config:
             terminal_size = min(terminal_size, config["terminal_width"]) # if terminal size lower than provided, keep the low one
         
         n_tab_chars = ProgressBar.indent + 2 if ProgressBar.indent > 0 else 0
