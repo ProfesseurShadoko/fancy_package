@@ -108,6 +108,21 @@ class PrintListener(Base):
         """
         return len(self.secret_commonwealth) == 0
     
+    # ----------------- #
+    # !-- TTY Logic --! #
+    # ----------------- #
+    
+    def isatty(self):
+        return self.original_stdout.isatty()
+
+    @property
+    def encoding(self):
+        return self.original_stdout.encoding
+    
+    def fileno(self):
+        return self.original_stdout.fileno()
+    
+    
     
 
 
