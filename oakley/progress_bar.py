@@ -188,7 +188,11 @@ class ProgressBar(MutableClass):
     def _get_stats(self, terminal_width:int) -> str:
         
         # 1. Compute elapsed time
-        elapsed_time = self.time_of_steps[-1] - self.start_time # self.time_of_steps can never be empty here
+        if self.time_of_steps == []:
+            elapsed_time = time.time() - self.start_time # should not happen if you do for i in ProgressBar(...) because next is called right away.
+        else:
+            elapsed_time = self.time_of_steps[-1] - self.start_time # self.time_of_steps can never be empty here
+        
         elapsed_time_str = ProgressBar.time(elapsed_time)
         
         # 2. Compute the average it/s (as average over last steps)
