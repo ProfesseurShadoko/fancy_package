@@ -44,7 +44,7 @@ try:
     from IPython import get_ipython
     shell = get_ipython()
     in_notebook = (shell is not None)
-    _notebook_is_unknown = (shell != "ZMQInteractiveShell")
+    _notebook_is_unknown = (shell.__class__.__name__ != "ZMQInteractiveShell")
 except Exception:
     in_notebook = False
 
